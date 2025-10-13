@@ -11,6 +11,7 @@ void main () {
     vec2 coordinates = gl_FragCoord.xy / u_resolution;
     vec2 delta = 1.0 / u_resolution;
 
+    // divergence 発散
     float divergenceCenter = texture2D(u_divergenceTexture, coordinates).r;
 
     float center = texture2D(u_pressureTexture, coordinates).r;
