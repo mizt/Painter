@@ -393,7 +393,7 @@ var Paint = (function () {
 
             this.colorPicker = new ColorPicker(this, 'brushColorHSVA', wgl, canvas, shaderSources, COLOR_PICKER_LEFT, 0);
 
-            //this.brushViewer = new BrushViewer(wgl, this.brushProgram, 0, 800, 200, 300);
+            this.brushViewer = new BrushViewer(wgl, this.brushProgram, 0, 800, 200, 300);
 
 
             this.saveButton = document.getElementById('save-button');
@@ -445,7 +445,7 @@ var Paint = (function () {
                 this.colorPicker.bottom = this.canvas.height - COLOR_PICKER_TOP;
 
 
-                //this.brushViewer.bottom = this.canvas.height - 800;
+                this.brushViewer.bottom = this.canvas.height - 800;
 
 
                 this.mainProjectionMatrix = makeOrthographicMatrix(new Float32Array(16), 0.0, this.canvas.width, 0, this.canvas.height, -5000.0, 5000.0);
@@ -794,7 +794,7 @@ var Paint = (function () {
         this.colorPicker.draw(this.colorModel === ColorModel.RGB);
 
 
-        //this.brushViewer.draw(this.brushX, this.brushY, this.brush);
+        this.brushViewer.draw(this.brushX, this.brushY, this.brush);
     };
 
 
