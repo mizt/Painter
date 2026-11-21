@@ -3,22 +3,13 @@ precision highp float;
 varying vec2 v_coordinates;
 
 uniform sampler2D u_paintTexture;
-
-uniform vec2 u_paintingSize; //painting size in pixels
-uniform vec2 u_paintingPosition; //bottom left position in pixels
-uniform vec2 u_paintingResolution;
-
+uniform vec2 u_resolution;
 uniform float u_normalScale;
-
 uniform vec3 u_lightDirection;
 uniform float u_roughness;
 uniform float u_F0;
 uniform float u_diffuseScale;
 uniform float u_specularScale;
-
-#ifdef RESIZING
-uniform float u_featherSize;
-#endif
 
 vec3 trilinearInterpolate(vec3 p, vec3 v000, vec3 v100, vec3 v010, vec3 v001, vec3 v101, vec3 v011, vec3 v110, vec3 v111) {
     return v000 * (1.0 - p.x) * (1.0 - p.y) * (1.0 - p.z) +
@@ -46,24 +37,15 @@ vec3 rybToRgb(vec3 ryb) {
 //samples with feathering at the edges
 vec4 samplePaintTexture (vec2 coordinates) {
     vec4 value = texture2D(u_paintTexture, coordinates);
-
-#ifdef RESIZING
-    vec2 featherSize = u_featherSize / u_paintingResolution;
-    float scale = smoothstep(-featherSize.x, 0.0, coordinates.x) * smoothstep(-featherSize.y, 0.0, coordinates.y)
-                  * smoothstep(1.0 + featherSize.x, 1.0, coordinates.x) * smoothstep(1.0 + featherSize.y, 1.0, coordinates.y);
-    return value * scale;
-#else
     return value;
-#endif
 }
 
 float getHeight (vec2 coordinates) {
     return samplePaintTexture(coordinates).a;
 }
 
-
 vec2 computeGradient(vec2 coordinates) { //sobel operator
-    vec2 delta = 1.0 / u_paintingResolution;
+    vec2 delta = 1.0 / u_resolution;
 
     float topLeft = getHeight(coordinates + vec2(-delta.x, delta.y));
     float top = getHeight(coordinates + vec2(0.0, delta.y));
@@ -129,11 +111,8 @@ float specularBRDF (vec3 lightDirection, vec3 eyeDirection, vec3 normal, float r
 }
 
 void main () {
-#ifdef SAVE
-    vec2 coordinates = vec2(v_coordinates.x, 1.0 - v_coordinates.y);
-#else
-    vec2 coordinates = (gl_FragCoord.xy - u_paintingPosition) / u_paintingSize;
-#endif
+
+    vec2 coordinates = gl_FragCoord.xy/u_resolution;
 
     vec4 value = samplePaintTexture(coordinates); //r, g, b, height
 

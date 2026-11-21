@@ -1,5 +1,4 @@
-var Brush = (function () {
-    'use strict';
+var Brush = (function() {
 
     var N_PREVIOUS_SPEEDS = 15; //how many previous speeds we store
 
@@ -16,6 +15,7 @@ var Brush = (function () {
 
     //the radius of a brush is equal to the scale
     function Brush (wgl, shaderSources, maxBristleCount) {
+        
         this.wgl = wgl;
 
         this.maxBristleCount = maxBristleCount;
@@ -165,15 +165,7 @@ var Brush = (function () {
 
         this.simulationFramebuffer = wgl.createFramebuffer();
 
-
-        this.quadVertexBuffer = wgl.createBuffer();
-        wgl.bufferData(this.quadVertexBuffer, wgl.ARRAY_BUFFER, new Float32Array([-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]), wgl.STATIC_DRAW);
-
-
-
     }
-
-
 
     //sets all the bristle vertices
     Brush.prototype.initialize = function (x, y, z, scale) {
@@ -184,7 +176,7 @@ var Brush = (function () {
         this.scale = scale;
 
         this.speeds = []; //most recent speed is stored at the highest index
-        for (var i = 0; i < N_PREVIOUS_SPEEDS; ++i) {
+        for (var i = 0; i<N_PREVIOUS_SPEEDS; i++) {
             this.speeds.push(0);
         }
 
@@ -206,7 +198,7 @@ var Brush = (function () {
             .uniform2f('u_resolution', this.maxBristleCount, VERTICES_PER_BRISTLE)
             .uniformTexture('u_randomsTexture', 2, wgl.TEXTURE_2D, this.randomsTexture)
 
-            .vertexAttribPointer(this.quadVertexBuffer, this.setBristlesProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+            .vertexAttribPointer(quadVertexBuffer, this.setBristlesProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
 
         wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.positionsTexture, 0);
 
@@ -235,7 +227,7 @@ var Brush = (function () {
                 .uniform2f('u_resolution', this.maxBristleCount, VERTICES_PER_BRISTLE)
                 .uniformTexture('u_randomsTexture', 2, wgl.TEXTURE_2D, this.randomsTexture)
 
-                .vertexAttribPointer(this.quadVertexBuffer, this.setBristlesProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+                .vertexAttribPointer(quadVertexBuffer, this.setBristlesProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
 
             wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.positionsTexture, 0);
 
@@ -251,6 +243,7 @@ var Brush = (function () {
     };
 
     Brush.prototype.update = function (x, y, z, scale) {
+        
         var dx = x - this.positionX,
             dy = y - this.positionY,
             dz = z - this.positionZ;
@@ -273,21 +266,16 @@ var Brush = (function () {
         var projectDrawState = wgl.createDrawState()
 
             .bindFramebuffer(this.simulationFramebuffer)
-            .viewport(0, 0, this.bristleCount, VERTICES_PER_BRISTLE)
-
+            .viewport(0,0,this.bristleCount,VERTICES_PER_BRISTLE)
             .useProgram(this.projectProgram)
-
             .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, this.positionsTexture)
             .uniformTexture('u_velocitiesTexture', 1, wgl.TEXTURE_2D, this.velocitiesTexture)
             .uniformTexture('u_randomsTexture', 2, wgl.TEXTURE_2D, this.randomsTexture)
-            
             .uniform1f('u_gravity', GRAVITY)
-
             .uniform1f('u_damping', BRUSH_DAMPING)
             .uniform1f('u_verticesPerBristle', VERTICES_PER_BRISTLE)
             .uniform2f('u_resolution', this.maxBristleCount, VERTICES_PER_BRISTLE)
-
-            .vertexAttribPointer(this.quadVertexBuffer, this.projectProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+            .vertexAttribPointer(quadVertexBuffer, this.projectProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
 
         wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.projectedPositionsTexture, 0);
         
@@ -295,10 +283,8 @@ var Brush = (function () {
 
 
         var setBristlesDrawState = wgl.createDrawState()
-            
             .bindFramebuffer(this.simulationFramebuffer)
             .viewport(0, 0, this.bristleCount, 1)
-
             .useProgram(this.setBristlesProgram)
             
             .uniform3f('u_brushPosition', this.positionX, this.positionY, this.positionZ)
@@ -311,13 +297,10 @@ var Brush = (function () {
 
             .uniformTexture('u_randomsTexture', 2, wgl.TEXTURE_2D, this.randomsTexture)
 
-            .vertexAttribPointer(this.quadVertexBuffer, this.setBristlesProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+            .vertexAttribPointer(quadVertexBuffer, this.setBristlesProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
 
         wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.projectedPositionsTexture, 0);
-
         wgl.drawArrays(setBristlesDrawState, wgl.TRIANGLE_STRIP, 0, 4);
-
-
 
 
         for (var i = 0; i < ITERATIONS; ++i) {
@@ -326,33 +309,30 @@ var Brush = (function () {
 
             wgl.drawArrays(setBristlesDrawState, wgl.TRIANGLE_STRIP, 0, 4);
 
-            for (var pass = 0; pass < 2; ++pass) {
+            for (var pass = 0; pass<2; pass++) {
 
                 var constraintDrawState = wgl.createDrawState()
 
                     .bindFramebuffer(this.simulationFramebuffer)
-                    .viewport(0, 0, this.bristleCount, VERTICES_PER_BRISTLE)
-
+                    .viewport(0,0,this.bristleCount,VERTICES_PER_BRISTLE)
                     .useProgram(this.distanceConstraintProgram)
-
                     .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, this.projectedPositionsTexture)
                     .uniform1f('u_pointCount', VERTICES_PER_BRISTLE)
                     .uniform1f('u_targetDistance', this.scale * BRISTLE_LENGTH / (VERTICES_PER_BRISTLE - 1))
                     .uniform1i('u_pass', pass)
                     .uniform2f('u_resolution', this.maxBristleCount, VERTICES_PER_BRISTLE)
-
-                    .vertexAttribPointer(this.quadVertexBuffer, this.distanceConstraintProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+                    .vertexAttribPointer(quadVertexBuffer, this.distanceConstraintProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
 
                 wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.projectedPositionsTextureTemp, 0);
                 
                 wgl.drawArrays(constraintDrawState, wgl.TRIANGLE_STRIP, 0, 4);
 
-                Utilities.swap(this, 'projectedPositionsTexture', 'projectedPositionsTextureTemp');
+                Utils.swap(this, 'projectedPositionsTexture', 'projectedPositionsTextureTemp');
             }
 
 
 
-            for (var pass = 0; pass < 3; ++pass) {
+            for (var pass=0; pass<3; pass++) {
 
                 var constraintDrawState = wgl.createDrawState()
 
@@ -368,16 +348,15 @@ var Brush = (function () {
                     .uniform1i('u_pass', pass)
                     .uniform2f('u_resolution', this.maxBristleCount, VERTICES_PER_BRISTLE)
 
-                    .vertexAttribPointer(this.quadVertexBuffer, this.bendingConstraintProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+                    .vertexAttribPointer(quadVertexBuffer, this.bendingConstraintProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
 
                 wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.projectedPositionsTextureTemp, 0);
                 
                 wgl.drawArrays(constraintDrawState, wgl.TRIANGLE_STRIP, 0, 4);
 
 
-                Utilities.swap(this, 'projectedPositionsTexture', 'projectedPositionsTextureTemp');
+                Utils.swap(this, 'projectedPositionsTexture', 'projectedPositionsTextureTemp');
             }
-
 
 
             var constraintDrawState = wgl.createDrawState()
@@ -390,41 +369,32 @@ var Brush = (function () {
                 .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, this.projectedPositionsTexture)
                 .uniform2f('u_resolution', this.maxBristleCount, VERTICES_PER_BRISTLE)
 
-                .vertexAttribPointer(this.quadVertexBuffer, this.planeConstraintProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+                .vertexAttribPointer(quadVertexBuffer, this.planeConstraintProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
 
             wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.projectedPositionsTextureTemp, 0);
             
             wgl.drawArrays(constraintDrawState, wgl.TRIANGLE_STRIP, 0, 4);
 
-            Utilities.swap(this, 'projectedPositionsTexture', 'projectedPositionsTextureTemp');
+            Utils.swap(this, 'projectedPositionsTexture', 'projectedPositionsTextureTemp');
         }
 
 
-
-
         var updateVelocityDrawState = wgl.createDrawState()
-
             .bindFramebuffer(this.simulationFramebuffer)
             .viewport(0, 0, this.bristleCount, VERTICES_PER_BRISTLE)
-
             .useProgram(this.updateVelocityProgram)
-
             .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, this.positionsTexture)
             .uniformTexture('u_projectedPositionsTexture', 1, wgl.TEXTURE_2D, this.projectedPositionsTexture)
             .uniform2f('u_resolution', this.maxBristleCount, VERTICES_PER_BRISTLE)
-
-            .vertexAttribPointer(this.quadVertexBuffer, this.distanceConstraintProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0);
+            .vertexAttribPointer(quadVertexBuffer,this.distanceConstraintProgram.getAttribLocation('a_position'),2,wgl.FLOAT, false, 0, 0);
 
         wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.previousVelocitiesTexture, 0);
         
         wgl.drawArrays(updateVelocityDrawState, wgl.TRIANGLE_STRIP, 0, 4);
 
-        Utilities.swap(this, 'velocitiesTexture', 'previousVelocitiesTexture');
-
-
-
-        Utilities.swap(this, 'previousPositionsTexture', 'positionsTexture');
-        Utilities.swap(this, 'positionsTexture', 'projectedPositionsTexture');
+        Utils.swap(this, 'velocitiesTexture', 'previousVelocitiesTexture');
+        Utils.swap(this, 'previousPositionsTexture', 'positionsTexture');
+        Utils.swap(this, 'positionsTexture', 'projectedPositionsTexture');
     };
 
     return Brush;

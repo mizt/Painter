@@ -3,7 +3,6 @@ precision highp float;
 attribute vec4 a_splatCoordinates; //(texCoord.x, texCoord.y, quad x (-1 or 1), quad y (-1 or 1))
 
 uniform vec2 u_paintingDimensions;
-uniform vec2 u_paintingPosition;
 uniform float u_splatRadius;
 uniform float u_zThreshold;
 
@@ -59,7 +58,7 @@ void main () {
 
     v_coordinates = a_splatCoordinates.zw;
 
-    gl_Position = vec4(-1.0 + 2.0 * (finalPosition - u_paintingPosition) / u_paintingDimensions, 0.0, 1.0);
+    gl_Position = vec4(-1.0 + 2.0 * (finalPosition) / u_paintingDimensions, 0.0, 1.0);
     
 #ifdef VELOCITY
     vec3 velocity = texture2D(u_velocitiesTexture, a_splatCoordinates.xy).rgb;

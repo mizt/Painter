@@ -1533,8 +1533,6 @@ var WrappedGL = (function () {
         return this;
     };
 
-
-
     return WrappedGL;
 
 }());
