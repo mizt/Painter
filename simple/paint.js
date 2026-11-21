@@ -47,8 +47,14 @@ var Paint = (function () {
     }
     
     function Paint (canvas, wgl) {
+      
         this.canvas = canvas;
         this.wgl = wgl;
+        
+        const RGBA = wgl.RGBA;
+        const U8 = wgl.UNSIGNED_BYTE;
+        const CLAMP_TO_EDGE = wgl.CLAMP_TO_EDGE;
+        const LINEAR = wgl.LINEAR;
 
         WrappedGL.loadTextFiles([
             'shaders/splat.vert','shaders/splat.frag',
@@ -80,18 +86,16 @@ var Paint = (function () {
 
             this.outputProgram = wgl.createProgram(
                 shaderSources['shaders/fullscreen.vert'], shaderSources['shaders/output.frag'], { 'a_position': 0 });
-            
 
             // simulation resolution = painting resolution * resolution scale
             this.resolutionScale = 1.0;
 
-            this.simulator = new Simulator(wgl,shaderSources,Config.W,Config.H);
+            this.simulator = new Simulator(wgl,shaderSources);
 
             // whether the user has moved their mouse at least once and we thus have a valid brush position
             this.brushInitialized = false; 
 
-            this.brushX = 0;
-            this.brushY = 0;
+            this.brushX = this.brushY = 0;
 
             this.brushScale = 50;
             this.brush = new Brush(wgl, shaderSources, MAX_BRISTLE_COUNT);
@@ -101,9 +105,9 @@ var Paint = (function () {
 
             this.mainProjectionMatrix = makeOrthographicMatrix(0.0,Config.W,0.0,Config.H,-5000.0,5000.0);
             
-            this.canvasTexture        = wgl.buildTexture(wgl.RGBA,wgl.UNSIGNED_BYTE,Config.W,Config.H, null,wgl.CLAMP_TO_EDGE,wgl.CLAMP_TO_EDGE,wgl.LINEAR,wgl.LINEAR);
-            this.tempCanvasTexture    = wgl.buildTexture(wgl.RGBA,wgl.UNSIGNED_BYTE,Config.W,Config.H, null,wgl.CLAMP_TO_EDGE,wgl.CLAMP_TO_EDGE,wgl.LINEAR,wgl.LINEAR);
-            this.blurredCanvasTexture = wgl.buildTexture(wgl.RGBA,wgl.UNSIGNED_BYTE,Config.W,Config.H, null,wgl.CLAMP_TO_EDGE,wgl.CLAMP_TO_EDGE,wgl.LINEAR,wgl.LINEAR);
+            this.canvasTexture        = wgl.buildTexture(RGBA,U8,Config.W,Config.H,null,CLAMP_TO_EDGE,CLAMP_TO_EDGE,LINEAR,LINEAR);
+            this.tempCanvasTexture    = wgl.buildTexture(RGBA,U8,Config.W,Config.H,null,CLAMP_TO_EDGE,CLAMP_TO_EDGE,LINEAR,LINEAR);
+            this.blurredCanvasTexture = wgl.buildTexture(RGBA,U8,Config.W,Config.H,null,CLAMP_TO_EDGE,CLAMP_TO_EDGE,LINEAR,LINEAR);
               
             this.mouseX = 0;
             this.mouseY = 0;
@@ -185,7 +189,7 @@ var Paint = (function () {
             .uniform1f('u_specularScale', SPECULAR_SCALE)
             .uniform1f('u_F0',F0)
             .uniform3f('u_lightDirection', LIGHT_DIRECTION[0], LIGHT_DIRECTION[1], LIGHT_DIRECTION[2])
-            .uniformTexture('u_paintTexture', 0, wgl.TEXTURE_2D, this.simulator.paintTexture);
+            .uniformTexture('u_paintTexture', 0, wgl.TEXTURE_2D, this.simulator.paintTexture[0]);
 
         wgl.drawArrays(paintingDrawState, wgl.TRIANGLE_STRIP,0,4);
 
