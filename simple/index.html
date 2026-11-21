@@ -35,13 +35,6 @@
                         
             const Utils = (function() {
                 return {
-                    swap:function(object,a,b) {
-                        const tmp = object[a];
-                        object[a] = object[b];
-                        object[b] = tmp;
-                    },
-                    
-                    
                     
                     clamp:function(x,min,max) {
                         return Math.max(min,Math.min(max,x));

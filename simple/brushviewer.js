@@ -111,7 +111,7 @@ var BrushViewer = (function () {
             .uniform4f('u_color', 0.6, 0.6, 0.6, 1.0)
             .uniformMatrix4fv('u_projectionViewMatrix', false, projectionViewMatrix)
             .enable(wgl.DEPTH_TEST)
-            .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, brush.positionsTexture);
+            .uniformTexture('u_positionsTexture',0,wgl.TEXTURE_2D, brush.positionsTexture[1]);
 
         wgl.drawElements(brushDrawState, wgl.LINES, brush.indexCount * brush.bristleCount / brush.maxBristleCount, wgl.UNSIGNED_SHORT, 0);
 

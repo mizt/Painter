@@ -202,6 +202,7 @@ var Paint = (function () {
 
         wgl.drawArrays(outputDrawState, wgl.TRIANGLE_STRIP,0,4);
 
+
         // draw brush to screen
         // we draw the brush if we're painting or you would start painting on click
         if (this.interactionState === InteractionMode.PAINTING) { 
@@ -216,10 +217,10 @@ var Paint = (function () {
                 .enable(wgl.DEPTH_TEST)
                 .enable(wgl.BLEND)
                 .blendFunc(wgl.DST_COLOR, wgl.ZERO)
-                .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, this.brush.positionsTexture);
+                .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, this.brush.positionsTexture[1]);
             wgl.drawElements(brushDrawState, wgl.LINES, this.brush.indexCount * this.brush.bristleCount / this.brush.maxBristleCount, wgl.UNSIGNED_SHORT, 0);
         }
-
+        
         this.brushViewer.draw(this.brushX, this.brushY, this.brush);
         
       }

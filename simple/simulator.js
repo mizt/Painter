@@ -113,8 +113,8 @@ const Simulator = (function () {
             .uniform2f('u_paintingDimensions',Config.W,Config.H)
             .uniform1f('u_splatRadius', splatRadius)
             .uniform4f('u_splatColor', splatColor[0], splatColor[1], splatColor[2], splatColor[3])
-            .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, brush.positionsTexture)
-            .uniformTexture('u_previousPositionsTexture', 1, wgl.TEXTURE_2D, brush.previousPositionsTexture)
+            .uniformTexture('u_previousPositionsTexture', 0, wgl.TEXTURE_2D, brush.positionsTexture[0])
+            .uniformTexture('u_positionsTexture', 1, wgl.TEXTURE_2D, brush.positionsTexture[1])
             .uniform1f('u_zThreshold', zThreshold);
         wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.paintTexture[0], 0);
         wgl.drawElements(splatPaintDrawState, wgl.TRIANGLES, brush.splatIndexCount * brush.bristleCount / brush.maxBristleCount, wgl.UNSIGNED_SHORT, 0);
@@ -131,10 +131,10 @@ const Simulator = (function () {
             .useProgram(this.velocitySplatProgram)
             .uniform2f('u_paintingDimensions',Config.W,Config.H)
             .uniform1f('u_splatRadius', splatRadius)
-            .uniformTexture('u_positionsTexture', 0, wgl.TEXTURE_2D, brush.positionsTexture)
-            .uniformTexture('u_previousPositionsTexture', 1, wgl.TEXTURE_2D, brush.previousPositionsTexture)
-            .uniformTexture('u_velocitiesTexture', 2, wgl.TEXTURE_2D, brush.velocitiesTexture)
-            .uniformTexture('u_previousVelocitiesTexture', 3, wgl.TEXTURE_2D, brush.previousVelocitiesTexture)
+            .uniformTexture('u_previousPositionsTexture', 0, wgl.TEXTURE_2D, brush.positionsTexture[0])
+            .uniformTexture('u_positionsTexture', 1, wgl.TEXTURE_2D, brush.positionsTexture[1])
+            .uniformTexture('u_previousVelocitiesTexture',2, wgl.TEXTURE_2D, brush.velocitiesTexture[0])
+            .uniformTexture('u_velocitiesTexture',3, wgl.TEXTURE_2D, brush.velocitiesTexture[1])
             .uniform1f('u_zThreshold', zThreshold)
             .uniform1f('u_velocityScale', velocityScale);
         wgl.framebufferTexture2D(this.simulationFramebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.velocityTexture[0], 0);
@@ -157,7 +157,7 @@ const Simulator = (function () {
             .uniformTexture('u_velocityTexture',0,wgl.TEXTURE_2D, this.velocityTexture[0])
             .vertexAttribPointer(quadVertexBuffer,this.divergenceProgram.getAttribLocation('a_position'),2,wgl.FLOAT,false,0,0);
         wgl.framebufferTexture2D(this.simulationFramebuffer,wgl.FRAMEBUFFER,wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.divergenceTexture, 0);
-        wgl.drawArrays(divergenceDrawState, wgl.TRIANGLE_STRIP, 0, 4);
+        wgl.drawArrays(divergenceDrawState, wgl.TRIANGLE_STRIP,0,4);
         
         //compute pressure via jacobi iteration
 
@@ -175,7 +175,7 @@ const Simulator = (function () {
             wgl.framebufferTexture2D(this.simulationFramebuffer,wgl.FRAMEBUFFER,wgl.COLOR_ATTACHMENT0,wgl.TEXTURE_2D,this.pressureTexture[1],0);
             jacobiDrawState.uniformTexture("u_pressureTexture",0,wgl.TEXTURE_2D, this.pressureTexture[0]);
             wgl.drawArrays(jacobiDrawState,wgl.TRIANGLE_STRIP,0,4);
-            Utils.swap(this.pressureTexture,0,1);
+            this.pressureTexture = [this.pressureTexture[1],this.pressureTexture[0]];
         }
         
         //subtract pressure gradient from velocity
@@ -190,22 +190,16 @@ const Simulator = (function () {
             .vertexAttribPointer(quadVertexBuffer,this.subtractProgram.getAttribLocation("a_position"),2,wgl.FLOAT,false,0,0);
         wgl.framebufferTexture2D(this.simulationFramebuffer,wgl.FRAMEBUFFER,wgl.COLOR_ATTACHMENT0,wgl.TEXTURE_2D,this.velocityTexture[1],0);
         wgl.drawArrays(subtractDrawState,wgl.TRIANGLE_STRIP,0,4);
-        Utils.swap(this.velocityTexture,0,1);
-    
-        //advect paint
-        this.advect(this.velocityTexture[0], this.paintTexture[0], this.paintTexture[1], DELTA_TIME, 1.0);
-        Utils.swap(this.paintTexture,0,1);
-    
-        //advect velocity
-        this.advect(this.velocityTexture[0], this.velocityTexture[0], this.velocityTexture[1], DELTA_TIME,FLUIDITY);
         this.velocityTexture = [this.velocityTexture[1],this.velocityTexture[0]];
 
-        //const tmp = this.velocityTexture[0];
-        //this.velocityTexture[0] = this.velocityTexture[1];
-        //this.velocityTexture[1] = tmp;
+        //advect paint
+        this.advect(this.velocityTexture[0], this.paintTexture[0], this.paintTexture[1], DELTA_TIME, 1.0);
+        this.paintTexture = [this.paintTexture[1],this.paintTexture[0]];
 
-        //Utils.swapTexture(this.velocityTexture[0],this.velocityTexture[1])
-        
+        //advect velocity
+        this.advect(this.velocityTexture[0],this.velocityTexture[0],this.velocityTexture[1],DELTA_TIME,FLUIDITY);
+        this.velocityTexture = [this.velocityTexture[1],this.velocityTexture[0]];
+
         // this.clearTextures(this.velocityTexture, this.velocityTextureTemp);
     };
 
