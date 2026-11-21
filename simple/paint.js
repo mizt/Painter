@@ -78,17 +78,9 @@ var Paint = (function () {
 
             this.framebuffer = wgl.createFramebuffer();
 
-            this.paintingProgram = wgl.createProgram(
-                shaderSources['shaders/painting.vert'], shaderSources['shaders/painting.frag']);
-            
-            this.brushProgram = wgl.createProgram(
-                shaderSources['shaders/brush.vert'], shaderSources['shaders/brush.frag'], { 'a_position': 0 });
-
-            this.outputProgram = wgl.createProgram(
-                shaderSources['shaders/fullscreen.vert'], shaderSources['shaders/output.frag'], { 'a_position': 0 });
-
-            // simulation resolution = painting resolution * resolution scale
-            this.resolutionScale = 1.0;
+            this.paintingProgram = wgl.createProgram(shaderSources['shaders/painting.vert'],shaderSources['shaders/painting.frag']);
+            this.brushProgram = wgl.createProgram(shaderSources['shaders/brush.vert'],shaderSources['shaders/brush.frag'],{'a_position':0});
+            this.outputProgram = wgl.createProgram(shaderSources['shaders/fullscreen.vert'],shaderSources['shaders/output.frag'],{'a_position':0});
 
             this.simulator = new Simulator(wgl,shaderSources);
 
@@ -105,19 +97,14 @@ var Paint = (function () {
 
             this.mainProjectionMatrix = makeOrthographicMatrix(0.0,Config.W,0.0,Config.H,-5000.0,5000.0);
             
-            this.canvasTexture        = wgl.buildTexture(RGBA,U8,Config.W,Config.H,null,CLAMP_TO_EDGE,CLAMP_TO_EDGE,LINEAR,LINEAR);
-            this.tempCanvasTexture    = wgl.buildTexture(RGBA,U8,Config.W,Config.H,null,CLAMP_TO_EDGE,CLAMP_TO_EDGE,LINEAR,LINEAR);
-            this.blurredCanvasTexture = wgl.buildTexture(RGBA,U8,Config.W,Config.H,null,CLAMP_TO_EDGE,CLAMP_TO_EDGE,LINEAR,LINEAR);
+            this.canvasTexture = wgl.buildTexture(RGBA,U8,Config.W,Config.H,null,CLAMP_TO_EDGE,CLAMP_TO_EDGE,LINEAR,LINEAR);
               
-            this.mouseX = 0;
-            this.mouseY = 0;
+            this.mouseX = this.mouseY = 0;
 
-            this.spaceDown = false;
-
-            canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-            canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-            document.addEventListener('mouseup', this.onMouseUp.bind(this));
-            canvas.addEventListener('mouseover', this.onMouseOver.bind(this));
+            canvas.addEventListener("mousemove",this.onMouseMove.bind(this));
+            canvas.addEventListener("mousedown",this.onMouseDown.bind(this));
+            document.addEventListener("mouseup",this.onMouseUp.bind(this));
+            canvas.addEventListener("mouseover",this.onMouseOver.bind(this));
 
             this.interactionState = InteractionMode.NONE;
 
@@ -157,7 +144,7 @@ var Paint = (function () {
 
             splatColor[3] = alpha;
 
-            var splatVelocityScale = SPLAT_VELOCITY_SCALE * splatColor[3] * this.resolutionScale;
+            var splatVelocityScale = SPLAT_VELOCITY_SCALE * splatColor[3];
 
             // splat paint
             this.simulator.splat(this.brush, Z_THRESHOLD * this.brushScale, Config.W,Config.H, splatColor, splatRadius, splatVelocityScale);
@@ -171,15 +158,14 @@ var Paint = (function () {
         wgl.framebufferTexture2D(this.framebuffer, wgl.FRAMEBUFFER, wgl.COLOR_ATTACHMENT0, wgl.TEXTURE_2D, this.canvasTexture, 0);
         var clearState = wgl.createClearState()
             .bindFramebuffer(this.framebuffer)
-            .clearColor(BACKGROUND_GRAY, BACKGROUND_GRAY, BACKGROUND_GRAY, 1.0);
-
+            .clearColor(BACKGROUND_GRAY,BACKGROUND_GRAY,BACKGROUND_GRAY,1.0);
         wgl.clear(clearState,wgl.COLOR_BUFFER_BIT|wgl.DEPTH_BUFFER_BIT);
 
         var paintingProgram = this.paintingProgram;
 
         var paintingDrawState = wgl.createDrawState()
             .bindFramebuffer(this.framebuffer)
-            .vertexAttribPointer(quadVertexBuffer, paintingProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0)
+            .vertexAttribPointer(quadVertexBuffer,paintingProgram.getAttribLocation('a_position'), 2, wgl.FLOAT, false, 0, 0)
             .viewport(0,0,Config.W,Config.H)
             .useProgram(paintingProgram)
             .uniform2f('u_resolution',Config.W,Config.H)
@@ -190,17 +176,16 @@ var Paint = (function () {
             .uniform1f('u_F0',F0)
             .uniform3f('u_lightDirection', LIGHT_DIRECTION[0], LIGHT_DIRECTION[1], LIGHT_DIRECTION[2])
             .uniformTexture('u_paintTexture', 0, wgl.TEXTURE_2D, this.simulator.paintTexture[0]);
-
         wgl.drawArrays(paintingDrawState, wgl.TRIANGLE_STRIP,0,4);
+
 
         //output painting to screen
         var outputDrawState = wgl.createDrawState()
           .viewport(0, 0, Config.W,Config.H)
           .useProgram(this.outputProgram)
-          .uniformTexture('u_input', 0, wgl.TEXTURE_2D, this.canvasTexture)
-          .vertexAttribPointer(quadVertexBuffer, 0,2, wgl.FLOAT, wgl.FALSE, 0, 0);
-
-        wgl.drawArrays(outputDrawState, wgl.TRIANGLE_STRIP,0,4);
+          .uniformTexture("u_input",0,wgl.TEXTURE_2D,this.canvasTexture)
+          .vertexAttribPointer(quadVertexBuffer,0,2,wgl.FLOAT,wgl.FALSE, 0, 0);
+        wgl.drawArrays(outputDrawState,wgl.TRIANGLE_STRIP,0,4);
 
 
         // draw brush to screen
